@@ -23,6 +23,24 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Extract SERumah fix package
+        run: |
+          if [ -f SERumah-Fix-v1.zip ]; then
+            unzip -o SERumah-Fix-v1.zip -d /tmp/serumah-fix
+            cp -a /tmp/serumah-fix/SERumah-Android/. .
+          else
+            echo "SERumah-Fix-v1.zip tidak ditemukan"
+            exit 1
+          fi
+
+      - name: Verify project files
+        run: |
+          test -f package.json
+          test -f capacitor.config.json
+          test -f resources/icon.png
+          test -f www/index.html
+          echo "Project files verified"
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -37,15 +55,6 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Verify project files
-        run: |
-          test -f package.json
-          test -f capacitor.config.json
-          test -f resources/icon.png
-          test -f android-overrides/res/drawable/ic_stat_serumah.xml
-          test -f scripts/patch-manifest.py
-          test -f www/index.html
-
       - name: Generate Android project
         run: npx cap add android
 
@@ -54,9 +63,14 @@ jobs:
 
       - name: Apply Android settings
         run: |
-          mkdir -p android/app/src/main/res/drawable
-          cp android-overrides/res/drawable/ic_stat_serumah.xml android/app/src/main/res/drawable/
-          python3 scripts/patch-manifest.py android/app/src/main/AndroidManifest.xml
+          if [ -f android-overrides/res/drawable/ic_stat_serumah.xml ]; then
+            mkdir -p android/app/src/main/res/drawable
+            cp android-overrides/res/drawable/ic_stat_serumah.xml android/app/src/main/res/drawable/
+          fi
+
+          if [ -f scripts/patch-manifest.py ]; then
+            python3 scripts/patch-manifest.py android/app/src/main/AndroidManifest.xml
+          fi
 
       - name: Generate launcher icons
         run: npx --yes @capacitor/assets@latest generate --android --assetPath resources
