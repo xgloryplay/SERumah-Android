@@ -1,9 +1,8 @@
-
 {
   "name": "serumah-android",
-  "version": "1.0.0",
+  "version": "1.4.1",
   "private": true,
-  "description": "SERumah Android app wrapper using Capacitor",
+  "description": "SERumah Android wrapper using free Capacitor plugins",
   "scripts": {
     "android:sync": "cap sync android",
     "android:debug": "cd android && ./gradlew assembleDebug"
