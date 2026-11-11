@@ -1,3 +1,4 @@
+
 name: Build SERumah Android APK
 
 on:
@@ -32,10 +33,18 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+
+      - name: Verify project files
+        run: |
+          test -f package.json
+          test -f capacitor.config.json
+          test -f resources/icon.png
+          test -f android-overrides/res/drawable/ic_stat_serumah.xml
+          test -f scripts/patch-manifest.py
+          test -f www/index.html
 
       - name: Generate Android project
         run: npx cap add android
@@ -49,11 +58,19 @@ jobs:
           cp android-overrides/res/drawable/ic_stat_serumah.xml android/app/src/main/res/drawable/
           python3 scripts/patch-manifest.py android/app/src/main/AndroidManifest.xml
 
+      - name: Generate launcher icons
+        run: npx --yes @capacitor/assets@latest generate --android --assetPath resources
+
       - name: Build debug APK
         working-directory: android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
+
+      - name: Verify APK
+        run: |
+          test -f android/app/build/outputs/apk/debug/app-debug.apk
+          ls -lh android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
