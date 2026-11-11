@@ -1,28 +1,40 @@
 # SERumah Android
 
-Project Android terpisah untuk membungkus aplikasi web SERumah menggunakan Capacitor 6.
+Android wrapper for SERumah using Capacitor 6.
 
-## Aplikasi tujuan
+## Website
 
-`https://satuproyeksi.com/profiles/serumah/`
+https://satuproyeksi.com/profiles/serumah/
 
-**Catatan:** versi ini memuat aplikasi dari server HTTPS dan membutuhkan koneksi internet. Ini bukan versi offline dan tidak menyalin source code website ke dalam APK.
+## Requirements
 
-## Build APK otomatis
+- Node.js 20
+- Java 17
+- Android SDK
+- Capacitor 6
 
-1. Buat repository GitHub baru bernama `SERumah-Android` (jangan gunakan repository Android/Reconciler).
-2. Upload seluruh isi folder project ini ke root repository baru, termasuk folder tersembunyi `.github`.
-3. Commit ke branch `main`.
-4. Buka tab **Actions** → **Build SERumah APK** → **Run workflow**.
-5. Setelah selesai, unduh artifact **serumah-debug-apk**.
-6. Ekstrak artifact ZIP, lalu instal `app-debug.apk` di perangkat Android.
+## Build APK
 
-Push pertama ke `main` juga otomatis menjalankan build.
+1. Open GitHub repository.
+2. Go to Actions.
+3. Select Build SERumah Android APK.
+4. Click Run workflow.
+5. Wait for build completion.
+6. Download artifact serumah-debug-apk.
 
-## Plugin perangkat
+## Included Free Plugins
 
-Plugin Capacitor Camera, Geolocation, dan Local Notifications sudah dimasukkan sebagai dependensi. Keberadaan plugin saja belum otomatis membuat fitur kamera, GPS, atau notifikasi berfungsi. Website SERumah perlu memanggil plugin/API yang sesuai dan meminta izin saat fitur digunakan.
+- Capacitor Camera
+- Capacitor Geolocation
+- Capacitor Local Notifications
 
-## Status distribusi
+## NFC Status
 
-Workflow ini menghasilkan **debug APK untuk pengujian**. Untuk distribusi resmi, perlu release signing dengan Android keystore dan kredensial yang disimpan sebagai GitHub Actions Secrets. Jangan pernah commit keystore atau password ke repository.
+NFC hardware feature is optional.
+
+Card balance reading for Mandiri e-money, BCA Flazz,
+and BNI TapCash is not implemented yet.
+
+## Build Output
+
+Debug APK for testing.
