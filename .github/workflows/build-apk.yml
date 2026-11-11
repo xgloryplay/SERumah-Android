@@ -3,8 +3,7 @@ name: Build SERumah Android APK
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
@@ -17,58 +16,57 @@ jobs:
   build:
     name: Build SERumah APK
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Verify project files
-        shell: bash
+      - name: Apply native feature package
+        run: |
+          set -e
+          test -f SERumah-Android-Native-Fix.zip
+          mkdir -p /tmp/serumah-native-fix
+          unzip -o SERumah-Android-Native-Fix.zip -d /tmp/serumah-native-fix
+          cp -a /tmp/serumah-native-fix/android-overrides/. android-overrides/
+          cp /tmp/serumah-native-fix/scripts/patch-manifest.py scripts/patch-manifest.py
+
+      - name: Verify source files
         run: |
           set -e
           test -f package.json
           test -f capacitor.config.json
           test -f resources/icon.png
           test -f www/index.html
-          if grep -q '"@capacitor/nfc"' package.json; then
-            echo "ERROR: package.json still contains unsupported @capacitor/nfc dependency."
-            exit 1
-          fi
-          echo "Project files verified."
+          test -f android-overrides/app/src/main/java/id/satuproyeksi/serumah/MainActivity.java
+          ! grep -q '"@capacitor/nfc"' package.json
+          ! grep -q '"@capgo/capacitor-nfc"' package.json
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Install npm dependencies
+      - name: Install dependencies
         run: npm install --no-audit --no-fund
-
-      - name: Verify Capacitor installation
-        run: npx cap --version
 
       - name: Generate Android project
         run: npx cap add android
 
-      - name: Sync Capacitor plugins and web assets
+      - name: Sync Capacitor plugins
         run: npx cap sync android
 
-      - name: Apply Android settings
-        shell: bash
+      - name: Install native plugin sources
         run: |
           set -e
+          mkdir -p android/app/src/main/java/id/satuproyeksi/serumah
+          cp android-overrides/app/src/main/java/id/satuproyeksi/serumah/*.java android/app/src/main/java/id/satuproyeksi/serumah/
+          python3 scripts/patch-manifest.py android/app/src/main/AndroidManifest.xml
           if [ -f android-overrides/res/drawable/ic_stat_serumah.xml ]; then
             mkdir -p android/app/src/main/res/drawable
             cp android-overrides/res/drawable/ic_stat_serumah.xml android/app/src/main/res/drawable/
-          fi
-          if [ -f scripts/patch-manifest.py ]; then
-            python3 scripts/patch-manifest.py android/app/src/main/AndroidManifest.xml
           fi
 
       - name: Generate launcher icons
@@ -81,12 +79,7 @@ jobs:
           ./gradlew assembleDebug --no-daemon
 
       - name: Verify APK
-        shell: bash
-        run: |
-          set -e
-          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
-          test -s "$APK_PATH"
-          ls -lh "$APK_PATH"
+        run: test -s android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
